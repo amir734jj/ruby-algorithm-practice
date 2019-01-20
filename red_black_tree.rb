@@ -69,44 +69,32 @@ class RedBlackTree
     parent = new_node.parent
 
     unless parent.nil? || parent == root || parent.color != :RED
-      grandfather = parent.parent
-      direction = if parent.value > new_node.value
-                    :LEFT
-                  else
-                    :RIGHT
-                  end
-      parent_direction = if grandfather.value > parent.value
-                           :LEFT
-                         else
-                           :RIGHT
-                         end
-      uncle = if parent_direction == :LEFT
-                grandfather.right
-              else
-                grandfather.left
-              end
+      grand_parent = parent.parent
+      direction = parent.value > new_node.value ? :LEFT : :RIGHT
+      parent_direction = grand_parent.value > parent.value ? :LEFT : :RIGHT
+      uncle = parent_direction == :LEFT ? grand_parent.right : grand_parent.left
 
       if uncle == @@nil_leaf || uncle.color == :BLACK
         if [direction, parent_direction] == %i[LEFT LEFT]
           # LL => Right rotation
-          right_rotation(new_node, parent, grandfather, true)
+          right_rotation(new_node, parent, grand_parent, true)
         elsif [direction, parent_direction] == %i[RIGHT RIGHT]
           # RR => Left rotation
-          left_rotation(new_node, parent, grandfather, true)
+          left_rotation(new_node, parent, grand_parent, true)
         elsif [direction, parent_direction] == %i[LEFT RIGHT]
           # LR => Right rotation, left rotation
           right_rotation(nil, new_node, parent, false)
           # due to the right rotation, parent and new_node positions have switched
-          left_rotation(parent, new_node, grandfather, true)
+          left_rotation(parent, new_node, grand_parent, true)
         elsif [direction, parent_direction] == %i[RIGHT LEFT]
           # RL => Left rotation, right rotation
           left_rotation(nil, new_node, parent, false)
           # due to the left rotation, parent and new_node positions have switches
-          right_rotation(parent, new_node, grandfather, true)
+          right_rotation(parent, new_node, grand_parent, true)
         end
       else
         # uncle is red, simply recolor
-        recolor(grandfather)
+        recolor(grand_parent)
       end
     end
   end
@@ -149,38 +137,39 @@ class RedBlackTree
   end
 
   # right rotation of the tree
-  def right_rotation(node, parent, grandfather, to_recolor)
-    grand_grandfather = grandfather.parent
+  def right_rotation(node, parent, grand_parent, to_recolor)
+    grand_grand_parent = grand_parent.parent
     # grandfather will become the right child of parent
-    update_parent(parent, grandfather, grand_grandfather)
+    update_parent(parent, grand_parent, grand_grand_parent)
 
     old_right = parent.right
-    parent.right = grandfather
-    grandfather.parent = parent
-    grandfather.left = old_right
-    old_right.parent = grandfather
+    parent.right = grand_parent
+    grand_parent.parent = parent
+    grand_parent.left = old_right
+    old_right.parent = grand_parent
 
-    if to_recolor # recolor the nodes after a move to preserve invariants
+    # recolor the nodes after a move to preserve invariants
+    if to_recolor
       parent.color = :BLACK
       node.color = :RED
-      grandfather.color = :RED
+      grand_parent.color = :RED
     end
   end
 
-  def left_rotation(node, parent, grandfather, to_recolor)
-    grand_grandfather = grandfather.parent
+  def left_rotation(node, parent, grand_parent, to_recolor)
+    grand_grand_parent = grand_parent.parent
     # grandfather will become the left child of parent
-    update_parent(parent, grandfather, grand_grandfather)
+    update_parent(parent, grand_parent, grand_grand_parent)
 
     old_left = parent.left
-    parent.left = grandfather
-    grandfather.parent = parent
-    grandfather.right = old_left
-    old_left.parent = grandfather
+    parent.left = grand_parent
+    grand_parent.parent = parent
+    grand_parent.right = old_left
+    old_left.parent = grand_parent
 
     if to_recolor
       parent.color = :BLACK
-      grandfather.color = :RED
+      grand_parent.color = :RED
       node.color = :RED
     end
   end

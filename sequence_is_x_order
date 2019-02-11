@@ -1,0 +1,112 @@
+def print_and_flush(str)
+  print str
+  $stdout.flush
+end
+
+class TreeNode
+  attr_accessor :value, :left, :right
+
+  def initialize(value, left, right)
+    @value = value
+    @left = left
+    @right = right
+
+    raise 'Invariant' if (!left.nil? && !right.nil?) && @left.value >= @right.value
+  end
+
+  def in_order(list = nil)
+    list = [] if list.nil?
+
+    @left.in_order(list) unless @left.nil?
+
+    list.push(@value)
+
+    @right.in_order(list) unless @right.nil?
+
+    list
+  end
+
+  def pre_order(list = nil)
+    list = [] if list.nil?
+
+    list.push(@value)
+
+    @left.pre_order(list)  unless @left.nil?
+
+    @right.pre_order(list)  unless @right.nil?
+
+    list
+  end
+
+  def post_order(list = nil)
+    list = [] if list.nil?
+
+    @left.post_order(list) unless @left.nil?
+
+    @right.post_order(list)  unless @right.nil?
+
+    list.push(@value)
+
+    list
+  end
+end
+
+class Integer
+  N_BYTES = [42].pack('i').size
+  N_BITS = N_BYTES * 16
+  MAX = 2 ** (N_BITS - 2) - 1
+  MIN = -MAX - 1
+end
+
+def is_in_order_traversal(order)
+  min = Integer::MIN
+
+  order.each do |value|
+    if value < min
+      return false
+    else 
+      min = value
+    end
+  end
+
+  true
+end
+
+def is_pre_order_traversal(pre)
+  s = []
+  min = Integer::MIN
+  root = min
+
+  pre.each do |value|
+    if value < root
+      return false
+    else
+      root = s.pop while !s.empty? && s[-1] < value
+      s.push(value)
+    end
+  end
+
+  true
+end
+
+
+n1 = TreeNode.new(1, nil, nil)
+n3 = TreeNode.new(3, nil, nil)
+n2 = TreeNode.new(2, n1, n3)
+
+n5 = TreeNode.new(5, nil, nil)
+n7 = TreeNode.new(7, nil, nil)
+n6 = TreeNode.new(6, n5, n7)
+
+n4 = TreeNode.new(4, n2, n6)
+
+puts 'pre-order:'
+puts n4.pre_order([]).join', '
+
+puts "\ni-order:\n"
+puts n4.in_order([]).join', '
+
+puts "\npost-order\n"
+puts n4.post_order([]).join', '
+
+puts is_pre_order_traversal(n4.in_order)
